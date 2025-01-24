@@ -1,0 +1,9 @@
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/lab7.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/package.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/package_source.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/edit_cache.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/rebuild_cache.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/list_install_components.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/install.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/install/local.dir
+/home/ziigork/Project/proga_3_semak/lab7/build/CMakeFiles/install/strip.dir

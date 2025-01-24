@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/ziigork/Project/proga_3_semak/lab7/build",
+  "command": "/usr/bin/c++ -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_FILESYSTEM_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB   -std=c++17 -g -o CMakeFiles/lab7.dir/main.cpp.o -c /home/ziigork/Project/proga_3_semak/lab7/main.cpp",
+  "file": "/home/ziigork/Project/proga_3_semak/lab7/main.cpp",
+  "output": "CMakeFiles/lab7.dir/main.cpp.o"
+}
+]

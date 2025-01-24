@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++17 -g CMakeFiles/lab7.dir/main.cpp.o -o lab7  /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.83.0 /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.83.0 /usr/lib/x86_64-linux-gnu/libboost_atomic.so.1.83.0 
