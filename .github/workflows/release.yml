@@ -62,8 +62,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Токен для доступа к GitHub API
       with:
-        tag_name: ${{ github.ref }} # Используем тег, который вызвал workflow
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }} # Используем имя тега
+        release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
 
