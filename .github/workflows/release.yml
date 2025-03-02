@@ -17,6 +17,9 @@ jobs:
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y cmake g++ libboost-dev
       
+      - name: Clean previous CMake cache
+        run: rm -rf build  # Удаляет старый кеш CMake
+      
       - name: Configure CMake
         run: cmake -B build
       
@@ -26,20 +29,19 @@ jobs:
       - name: Package
         run: |
           mkdir -p release
-          cp build/my_program release/
-          tar -czvf release/my_program-linux.tar.gz -C release my_program
+          cp build/lab7 release/
+          tar -czvf release/lab7-linux.tar.gz -C release lab7
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my_program-linux
-          path: release/my_program-linux.tar.gz
+          name: lab7-linux
+          path: release/lab7-linux.tar.gz
       
-      - name: Create GitHub Release (if tag)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/my_program-linux.tar.gz
+          files: release/lab7-linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: brew install cmake boost
       
+      - name: Clean previous CMake cache
+        run: rm -rf build  # Удаляет старый кеш CMake
+      
       - name: Configure CMake
         run: cmake -B build
       
@@ -61,19 +66,18 @@ jobs:
       - name: Package
         run: |
           mkdir -p release
-          cp build/my_program release/
-          tar -czvf release/my_program-macos.tar.gz -C release my_program
+          cp build/lab7 release/
+          tar -czvf release/lab7-macos.tar.gz -C release lab7
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my_program-macos
-          path: release/my_program-macos.tar.gz
+          name: lab7-macos
+          path: release/lab7-macos.tar.gz
       
-      - name: Create GitHub Release (if tag)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/my_program-macos.tar.gz
+          files: release/lab7-macos.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
