@@ -1,78 +1,75 @@
-name: C++ CI and Release
+name: Release
 
 on:
   push:
-    branches:
-      - main # Запускать workflow при пуше в ветку main
     tags:
-      - 'v*' # Запускать workflow при появлении тегов, начинающихся с 'v' (например, v1.0.0)
+      - 'v*'
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        cpp: [17]
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Boost on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libboost-all-dev g++
-
-    - name: Set up Boost and LLVM on macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew update
-        brew install boost llvm
-        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
-
-    - name: Compile the code on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        g++ -std=c++${{ matrix.cpp }} -o main main.cpp -lboost_system -lboost_filesystem
-
-    - name: Compile the code on macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        $CXX -std=c++${{ matrix.cpp }} -o main main.cpp -L$(brew --prefix boost)/lib -I$(brew --prefix boost)/include -lboost_system -lboost_filesystem
-
-    - name: Run the program
-      run: |
-        echo "test_input" | ./main
-
-  release:
-    needs: build # Зависит от успешного завершения задачи build
-    if: startsWith(github.ref, 'refs/tags/') # Запускать только при появлении тегов
+  build-linux:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y cmake g++ libboost-dev
+      
+      - name: Configure CMake
+        run: cmake -B build
+      
+      - name: Build
+        run: cmake --build build --config Release
+      
+      - name: Package
+        run: |
+          mkdir -p release
+          cp build/my_program release/
+          tar -czvf release/my_program-linux.tar.gz -C release my_program
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my_program-linux
+          path: release/my_program-linux.tar.gz
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/my_program-linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Токен для доступа к GitHub API
-      with:
-        tag_name: ${{ github.ref_name }} # Используем имя тега
-        release_name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # URL для загрузки файлов
-        asset_path: ./main # Путь к файлу, который нужно загрузить (например, скомпилированный бинарник)
-        asset_name: main # Имя файла в релизе
-        asset_content_type: application/octet-stream # Тип файла
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: brew install cmake boost
+      
+      - name: Configure CMake
+        run: cmake -B build
+      
+      - name: Build
+        run: cmake --build build --config Release
+      
+      - name: Package
+        run: |
+          mkdir -p release
+          cp build/my_program release/
+          tar -czvf release/my_program-macos.tar.gz -C release my_program
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my_program-macos
+          path: release/my_program-macos.tar.gz
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/my_program-macos.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
