@@ -26,13 +26,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libboost-all-dev g++
 
-    - name: Set up Boost on macOS
+    - name: Set up Boost and LLVM on macOS
       if: matrix.os == 'macos-latest'
       run: |
         brew update
         brew install boost llvm
-        echo "CC=/usr/local/opt/llvm/bin/clang" >> $GITHUB_ENV
-        echo "CXX=/usr/local/opt/llvm/bin/clang++" >> $GITHUB_ENV
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
 
     - name: Compile the code on Ubuntu
       if: matrix.os == 'ubuntu-latest'
@@ -42,7 +42,7 @@ jobs:
     - name: Compile the code on macOS
       if: matrix.os == 'macos-latest'
       run: |
-        $CXX -std=c++${{ matrix.cpp }} -o main main.cpp -lboost_system -lboost_filesystem
+        $CXX -std=c++${{ matrix.cpp }} -o main main.cpp -L$(brew --prefix boost)/lib -I$(brew --prefix boost)/include -lboost_system -lboost_filesystem
 
     - name: Run the program
       run: |
