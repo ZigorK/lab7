@@ -44,7 +44,7 @@ jobs:
         with:
           files: release/lab7-linux.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }} # Используем ваш PAT
 
   build-macos:
     runs-on: macos-latest
@@ -53,7 +53,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: brew install cmake boost
+        run: |
+          brew update
+          brew install --formula cmake boost
 
       - name: Clean previous CMake cache
         run: rm -rf build
@@ -82,4 +84,4 @@ jobs:
         with:
           files: release/lab7-macos.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }} # Используем ваш PAT
