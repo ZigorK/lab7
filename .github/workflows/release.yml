@@ -1,14 +1,17 @@
-name: C++ CI and Release
+name: C++ CI
 
 on:
   push:
-    tags:
-      - 'v*' # Запускать workflow при появлении тегов, начинающихся с 'v' (например, v1.0.0)
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 5 # Ограничиваем выполнение задачи 5 минутами
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -45,31 +48,3 @@ jobs:
     - name: Run the program
       run: |
         echo "test_input" | ./main
-
-  release:
-    needs: build # Зависит от успешного завершения задачи build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Токен для доступа к GitHub API
-      with:
-        tag_name: ${{ github.ref }} # Используем тег, который вызвал workflow
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # URL для загрузки файлов
-        asset_path: ./main # Путь к файлу, который нужно загрузить (например, скомпилированный бинарник)
-        asset_name: main # Имя файла в релизе
-        asset_content_type: application/octet-stream # Тип файла
