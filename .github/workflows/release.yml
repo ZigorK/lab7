@@ -24,29 +24,23 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libboost-all-dev
+        sudo apt-get install -y libboost-all-dev g++
 
     - name: Set up Boost on macOS
       if: matrix.os == 'macos-latest'
       run: |
         brew update
-        brew install boost
-
-    - name: Set up GCC (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++
-
-    - name: Set up Clang (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew update
-        brew install llvm
+        brew install boost llvm
         echo "CC=/usr/local/opt/llvm/bin/clang" >> $GITHUB_ENV
         echo "CXX=/usr/local/opt/llvm/bin/clang++" >> $GITHUB_ENV
 
-    - name: Compile the code
+    - name: Compile the code on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        g++ -std=c++${{ matrix.cpp }} -o main main.cpp -lboost_system -lboost_filesystem
+
+    - name: Compile the code on macOS
+      if: matrix.os == 'macos-latest'
       run: |
         $CXX -std=c++${{ matrix.cpp }} -o main main.cpp -lboost_system -lboost_filesystem
 
