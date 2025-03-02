@@ -11,10 +11,11 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 5 # Ограничиваем выполнение задачи 5 минутами
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        cpp: [17] # Указываем версию C++
+        cpp: [17]
 
     steps:
     - name: Checkout repository
@@ -46,4 +47,4 @@ jobs:
 
     - name: Run the program
       run: |
-        ./main
+        echo "test_input" | ./main
