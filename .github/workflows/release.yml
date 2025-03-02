@@ -44,7 +44,7 @@ jobs:
         with:
           files: release/lab7-linux.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_PAT }} # Используем ваш PAT
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }}
 
   build-macos:
     runs-on: macos-latest
@@ -84,4 +84,4 @@ jobs:
         with:
           files: release/lab7-macos.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_PAT }} # Используем ваш PAT
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }}
