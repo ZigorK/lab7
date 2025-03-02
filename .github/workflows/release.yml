@@ -1,138 +1,48 @@
-name: 'C++ CI'
+name: C++ CI
 
 on:
   push:
     branches:
       - main
-      - feature/github_actions
-
-permissions:
-  contents: write
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build_ubuntu:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        cpp: [17] # Указываем версию C++
+
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      
-      - name: Configure with CMake
-        run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - name: Build project
-        run: cmake --build .
-      
-      - name: Create package
-        run: cmake --build . --target package
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: List files (Linux)
-        run: ls -la
+    - name: Set up Boost
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libboost-all-dev
 
-      - name: Rename package (Linux)
-        run: |
-          DEB_FILE=$(ls ./laba3-*.deb)
-          if [ "$DEB_FILE" != "./laba3-0.0.${{ github.run_number }}-Linux.deb" ]; then
-            mv "$DEB_FILE" ./laba3-0.0.${{ github.run_number }}-Linux.deb
-          fi
+    - name: Set up GCC (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++
 
-      - name: Delete existing release (Ubuntu)
-        run: |
-          release_tag="v${{ github.run_number }}-ubuntu"
-          existing_release=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$release_tag")
-          
-          if [[ $(echo $existing_release | jq -r '.message') != "Not Found" ]]; then
-            release_id=$(echo $existing_release | jq -r '.id')
-            echo "Found existing release, deleting release with ID $release_id"
-            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/$release_id"
-          fi
+    - name: Set up Clang (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install llvm
+        echo "CC=/usr/local/opt/llvm/bin/clang" >> $GITHUB_ENV
+        echo "CXX=/usr/local/opt/llvm/bin/clang++" >> $GITHUB_ENV
 
-      - name: Create Release (Ubuntu)
-        id: create_release_ubuntu
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}-ubuntu
-          release_name: Release ${{ github.run_number }} (Ubuntu)
-          draft: false
-          prerelease: false
+    - name: Compile the code
+      run: |
+        $CXX -std=c++${{ matrix.cpp }} -o main main.cpp -lboost_system -lboost_filesystem
 
-      - name: Upload Release Asset (Ubuntu)
-        id: upload_release_asset_ubuntu
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release_ubuntu.outputs.upload_url }}
-          asset_path: ./laba3-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: laba3-0.0.${{ github.run_number }}-Linux.deb
-          asset_content_type: application/vnd.debian.binary-package
-
-
-  build_macos:
-    runs-on: macos-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      
-      - name: Install CMake with productbuild support
-        run: brew install cmake
-
-      - name: Configure with CMake
-        run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - name: Build project
-        run: cmake --build .
-
-      - name: Create package
-        run: cmake --build . --target package
-
-      - name: List files (macOS)
-        run: ls -la
-
-      - name: Rename package (macOS)
-        run: |
-          PKG_FILE=$(ls ./laba3-*.pkg)
-          if [ "$PKG_FILE" != "./laba3-0.0.${{ github.run_number }}-macos.pkg" ]; then
-            mv "$PKG_FILE" ./laba3-0.0.${{ github.run_number }}-macos.pkg
-          fi
-
-      - name: Delete existing release (macOS)
-        run: |
-          release_tag="v${{ github.run_number }}-macos"
-          existing_release=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$release_tag")
-          
-          if [[ $(echo $existing_release | jq -r '.message') != "Not Found" ]]; then
-            release_id=$(echo $existing_release | jq -r '.id')
-            echo "Found existing release, deleting release with ID $release_id"
-            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/$release_id"
-          fi
-
-      - name: Create Release (macOS)
-        id: create_release_macos
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}-macos
-          release_name: Release ${{ github.run_number }} (macOS)
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset (macOS)
-        id: upload_release_asset_macos
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
-          asset_path: ./laba3-0.0.${{ github.run_number }}-macos.pkg
-          asset_name: laba3-0.0.${{ github.run_number }}-macos.pkg
-          asset_content_type: application/x-apple-installer-package
+    - name: Run the program
+      run: |
+        ./main
